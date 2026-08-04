@@ -1,0 +1,92 @@
+# B.2. Blueprint API
+
+Tài liệu mô tả các REST API dự kiến của toàn bộ hệ thống Microservice.
+
+---
+
+# 1. auth-service
+
+**Port:** 8081
+
+**Gateway Prefix:** `/api/auth`
+
+| Method | Endpoint | Mô tả | Yêu cầu |
+|---------|----------|-------|----------|
+| POST | /auth/login | Đăng nhập và trả JWT | Public |
+| POST | /auth/register | Đăng ký tài khoản | Public |
+| GET | /auth/profile | Thông tin người dùng hiện tại | JWT |
+| POST | /auth/logout | Đăng xuất | JWT |
+
+---
+
+# 2. course-service
+
+**Port:** 8082
+
+**Gateway Prefix:** `/api/courses`
+
+## API cho Frontend
+
+| Method | Endpoint | Mô tả | Yêu cầu |
+|---------|----------|-------|----------|
+| GET | /courses | Danh sách môn học (search + phân trang) | Public |
+| GET | /courses/{id} | Chi tiết môn học | Public |
+| POST | /courses | Thêm môn học | ADMIN |
+| PUT | /courses/{id} | Cập nhật môn học | ADMIN |
+| DELETE | /courses/{id} | Xóa môn học | ADMIN |
+
+---
+
+## API nội bộ
+
+Các API dưới đây **không public**, chỉ registration-service được phép gọi.
+
+| Method | Endpoint | Mô tả |
+|---------|----------|-------|
+| PATCH | /internal/courses/{id}/reserve-seat | Kiểm tra còn chỗ và giảm số chỗ còn lại |
+| PATCH | /internal/courses/{id}/release-seat | Hoàn trả một chỗ khi hủy đăng ký |
+
+---
+
+# 3. registration-service
+
+**Port:** 8083
+
+**Gateway Prefix:** `/api/registrations`
+
+| Method | Endpoint | Mô tả | Yêu cầu |
+|---------|----------|-------|----------|
+| POST | /registrations | Đăng ký học phần | STUDENT |
+| GET | /registrations/my | Danh sách học phần đã đăng ký | STUDENT |
+| DELETE | /registrations/{id} | Hủy đăng ký học phần | STUDENT hoặc ADMIN |
+
+---
+
+# Luồng xử lý đăng ký học phần
+
+1. Người dùng gửi yêu cầu đăng ký học phần.
+2. API Gateway chuyển request tới registration-service.
+3. registration-service gọi API nội bộ của course-service:
+   - reserve-seat
+4. Nếu course-service xác nhận còn chỗ:
+   - registration-service lưu Registration vào registration_db.
+5. Nếu hết chỗ:
+   - Trả về lỗi cho người dùng.
+
+---
+
+# Luồng xử lý hủy đăng ký
+
+1. Người dùng gửi yêu cầu hủy đăng ký.
+2. registration-service xóa Registration.
+3. registration-service gọi API:
+   - release-seat
+4. course-service tăng số chỗ còn lại.
+
+---
+
+# Ghi chú
+
+- Blueprint này là thiết kế ban đầu của hệ thống.
+- Các API sẽ tiếp tục được bổ sung và điều chỉnh trong các buổi tiếp theo.
+- Mỗi service có database riêng và chỉ giao tiếp với nhau thông qua REST API.
