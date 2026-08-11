@@ -13,24 +13,51 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // 404 - Khong tim thay du lieu
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(NoSuchElementException ex) {
+    public ResponseEntity<Map<String, String>> handleNotFound(
+            NoSuchElementException ex
+    ) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message", ex.getMessage()));
     }
 
+    // 400 - Du lieu/yeu cau khong hop le
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(IllegalArgumentException ex) {
+    public ResponseEntity<Map<String, String>> handleBadRequest(
+            IllegalArgumentException ex
+    ) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("message", ex.getMessage()));
     }
 
+    // BUOI 3
+    // 409 - Xung dot trang thai, vi du mon hoc da het cho
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(
+            IllegalStateException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", ex.getMessage()));
+    }
+
+    // 400 - Loi Validation DTO
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, String>> handleValidation(
+            MethodArgumentNotValidException ex
+    ) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
-                errors.put(fieldError.getField(), fieldError.getDefaultMessage())
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(fieldError ->
+                        errors.put(
+                                fieldError.getField(),
+                                fieldError.getDefaultMessage()
+                        )
+                );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(errors);
     }
 }
