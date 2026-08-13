@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -73,34 +74,34 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- =============================== -->
-		<!-- LAB 4 - C.2: SPRING SECURITY -->
-		<!-- =============================== -->
+		<!-- ================================ -->
+		<!-- LAB 4 - C.2 - SPRING SECURITY -->
+		<!-- ================================ -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-		<!-- =============================== -->
-		<!-- LAB 4 - C.2: JWT - JDK 17 -->
-		<!-- =============================== -->
+		<!-- ================================ -->
+		<!-- LAB 4 - C.2 - JJWT 0.12.6 -->
+		<!-- ================================ -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.6</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.11.5</version>
+			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -126,6 +127,7 @@
 	</dependencies>
 
 	<build>
+
 		<plugins>
 
 			<plugin>
@@ -134,12 +136,15 @@
 
 				<configuration>
 					<excludes>
+
 						<exclude>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 						</exclude>
+
 					</excludes>
 				</configuration>
+
 			</plugin>
 
 			<plugin>
@@ -149,6 +154,7 @@
 				<executions>
 
 					<execution>
+
 						<id>default-compile</id>
 						<phase>compile</phase>
 
@@ -157,16 +163,22 @@
 						</goals>
 
 						<configuration>
+
 							<annotationProcessorPaths>
+
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
 								</path>
+
 							</annotationProcessorPaths>
+
 						</configuration>
+
 					</execution>
 
 					<execution>
+
 						<id>default-testCompile</id>
 						<phase>test-compile</phase>
 
@@ -175,19 +187,26 @@
 						</goals>
 
 						<configuration>
+
 							<annotationProcessorPaths>
+
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
 								</path>
+
 							</annotationProcessorPaths>
+
 						</configuration>
+
 					</execution>
 
 				</executions>
+
 			</plugin>
 
 		</plugins>
+
 	</build>
 
 </project>

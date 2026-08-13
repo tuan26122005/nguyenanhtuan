@@ -2,7 +2,7 @@ package vn.edu.crs.registrationservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import vn.edu.crs.registrationservice.client.CourseClient;
+import vn.edu.crs.registrationservice.Client.CourseClient;
 import vn.edu.crs.registrationservice.dto.RegistrationRequestDTO;
 import vn.edu.crs.registrationservice.entity.Registration;
 import vn.edu.crs.registrationservice.repository.RegistrationRepository;
