@@ -1,77 +1,57 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
+import axios from 'axios';
+import { login as loginApi } from '../api/authApi';
+import { useAuth } from '../context/AuthContext';
+import type { ApiErrorResponse } from '../types/apiError';
 
 export default function LoginPage() {
-    const [username, setUsername] = useState('admin');
-    const [password, setPassword] = useState('123456');
-    const [loading, setLoading] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setErrorMsg('');
-        setLoading(true);
-
+        setError(null);
+        setSubmitting(true);
         try {
-            // Gọi API đăng nhập thực tế tới Auth Service / Gateway
-            const response = await axiosClient.post('/api/auth/login', {
-                username,
-                password,
-            });
-
-            const { token, role } = response.data;
-
-            localStorage.setItem('token', token);
-            localStorage.setItem('role', role || 'ADMIN');
-            localStorage.setItem('username', username);
-
-            navigate('/admin/api-keys');
-        } catch (err: any) {
-            console.warn('Lỗi kết nối Backend Auth, fallback giả lập token:', err);
-
-            // Trường hợp chưa bật Auth Service, tạm lưu token để dev UI
-            localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiJ9.mock');
-            localStorage.setItem('role', 'ADMIN');
-            localStorage.setItem('username', username);
-            navigate('/admin/api-keys');
+            const res = await loginApi({ username, password });
+            login(res.data);
+            navigate('/courses');
+        } catch (err) {
+            if (axios.isAxiosError<ApiErrorResponse>(err) && err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Dang nhap that bai, vui long thu lai.');
+            }
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
     return (
-        <div style={{ maxWidth: 400, margin: '50px auto', padding: 24, border: '1px solid #ccc', borderRadius: 8, fontFamily: 'sans-serif' }}>
-            <h2>Đăng nhập Hệ thống</h2>
-            {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                    <label style={{ display: 'block', marginBottom: 4 }}>Tên đăng nhập:</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        style={{ width: '100%', padding: 8 }}
-                        required
-                    />
+        <div style={{ maxWidth: 360, margin: '80px auto', padding: 24, border: '1px solid #ddd', borderRadius: 8 }}>
+            <h2>Dang nhap he thong CRS</h2>
+            <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: 12 }}>
+                    <label>Ten dang nhap</label><br />
+                    <input value={username} onChange={(e) => setUsername(e.target.value)} style={{ width: '100%' }} />
                 </div>
-                <div>
-                    <label style={{ display: 'block', marginBottom: 4 }}>Mật khẩu:</label>
+                <div style={{ marginBottom: 12 }}>
+                    <label>Mat khau</label><br />
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        style={{ width: '100%', padding: 8 }}
-                        required
+                        style={{ width: '100%' }}
                     />
                 </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    style={{ padding: 10, backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
-                >
-                    {loading ? 'Đang xử lý...' : 'Đăng nhập'}
+                {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
+                <button type="submit" disabled={submitting} style={{ width: '100%' }}>
+                    {submitting ? 'Dang xu ly...' : 'Dang nhap'}
                 </button>
             </form>
         </div>
