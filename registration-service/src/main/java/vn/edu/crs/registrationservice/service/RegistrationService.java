@@ -1,3 +1,4 @@
+// path: registration-service/src/main/java/vn/edu/crs/registrationservice/service/RegistrationService.java
 package vn.edu.crs.registrationservice.service;
 
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import vn.edu.crs.registrationservice.entity.Registration;
 import vn.edu.crs.registrationservice.repository.RegistrationRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -20,79 +22,47 @@ public class RegistrationService {
     private final RegistrationRepository registrationRepository;
     private final CourseClient courseClient;
 
-    public Registration register(
-            RegistrationRequestDTO dto
-    ) {
+    public Registration register(RegistrationRequestDTO dto) {
 
-        if (registrationRepository
-                .existsByStudentIdAndCourseIdAndTrangThai(
-                        dto.getStudentId(),
-                        dto.getCourseId(),
-                        DA_DANG_KY
-                )) {
-
-            throw new IllegalStateException(
-                    "Sinh vien da dang ky mon hoc nay roi"
-            );
+        if (registrationRepository.existsByStudentIdAndCourseIdAndTrangThai(
+                dto.getStudentId(),
+                dto.getCourseId(),
+                DA_DANG_KY
+        )) {
+            throw new IllegalStateException("Sinh vien da dang ky mon hoc nay roi");
         }
 
         courseClient.reserveSeat(dto.getCourseId());
 
-        Registration registration =
-                new Registration();
+        Registration registration = new Registration();
+        registration.setStudentId(dto.getStudentId());
+        registration.setCourseId(dto.getCourseId());
+        registration.setTrangThai(DA_DANG_KY);
+        registration.setNgayDangKy(LocalDateTime.now());
 
-        registration.setStudentId(
-                dto.getStudentId()
-        );
-
-        registration.setCourseId(
-                dto.getCourseId()
-        );
-
-        registration.setTrangThai(
-                DA_DANG_KY
-        );
-
-        registration.setNgayDangKy(
-                LocalDateTime.now()
-        );
-
-        return registrationRepository.save(
-                registration
-        );
+        return registrationRepository.save(registration);
     }
 
     public void cancel(Long registrationId) {
 
-        Registration registration =
-                registrationRepository
-                        .findById(registrationId)
-                        .orElseThrow(() ->
-                                new NoSuchElementException(
-                                        "Khong tim thay dang ky id = "
-                                                + registrationId
-                                )
-                        );
+        Registration registration = registrationRepository.findById(registrationId)
+                .orElseThrow(() ->
+                        new NoSuchElementException("Khong tim thay dang ky id = " + registrationId)
+                );
 
-        if (DA_HUY.equals(
-                registration.getTrangThai()
-        )) {
-
-            throw new IllegalStateException(
-                    "Dang ky nay da duoc huy truoc do"
-            );
+        if (DA_HUY.equals(registration.getTrangThai())) {
+            throw new IllegalStateException("Dang ky nay da duoc huy truoc do");
         }
 
-        courseClient.releaseSeat(
-                registration.getCourseId()
-        );
+        courseClient.releaseSeat(registration.getCourseId());
 
-        registration.setTrangThai(
-                DA_HUY
-        );
+        registration.setTrangThai(DA_HUY);
 
-        registrationRepository.save(
-                registration
-        );
+        registrationRepository.save(registration);
+    }
+
+    // Bổ sung phương thức lấy danh sách đăng ký của sinh viên theo studentId
+    public List<Registration> getMyRegistrations(Long studentId) {
+        return registrationRepository.findByStudentId(studentId);
     }
 }
