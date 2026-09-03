@@ -2,45 +2,37 @@ package vn.edu.crs.authservice.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import vn.edu.crs.authservice.entity.User;
-import vn.edu.crs.authservice.repository.UserRepository;
+import vn.edu.crs.authservice.entity.ApiKey;
+import vn.edu.crs.authservice.repository.ApiKeyRepository;
+
+import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final ApiKeyRepository apiKeyRepository;
 
     @Override
-    public void run(String... args) {
+    public void run(String... args) throws Exception {
+        String testKey = "ak_live_d85rixlbhjqix0b4";
 
-        if (userRepository.findByUsername("admin").isEmpty()) {
+        // Kiểm tra xem key test đã tồn tại trong DB chưa
+        boolean exists = apiKeyRepository.findAll().stream()
+                .anyMatch(k -> testKey.equals(k.getKeyValue()));
 
-            User admin = new User();
+        if (!exists) {
+            ApiKey apiKey = new ApiKey();
+            apiKey.setKeyValue(testKey);
+            apiKey.setOwnerName("Doi tac Test");
+            apiKey.setScopes("courses:read");
+            apiKey.setStatus("ACTIVE");
+            apiKey.setExpiresAt(LocalDateTime.now().plusDays(30));
+            apiKey.setCreatedAt(LocalDateTime.now());
 
-            admin.setUsername("admin");
-            admin.setPassword(
-                    passwordEncoder.encode("admin123")
-            );
-            admin.setRole("ADMIN");
-
-            userRepository.save(admin);
-        }
-
-        if (userRepository.findByUsername("student1").isEmpty()) {
-
-            User student = new User();
-
-            student.setUsername("student1");
-            student.setPassword(
-                    passwordEncoder.encode("student123")
-            );
-            student.setRole("STUDENT");
-
-            userRepository.save(student);
+            apiKeyRepository.save(apiKey);
+            System.out.println(">>> [DataSeeder] Đã chèn thành công API Key test: " + testKey);
         }
     }
 }
