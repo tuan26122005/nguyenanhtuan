@@ -1,3 +1,4 @@
+// path: auth-service/src/main/java/vn/edu/crs/authservice/service/AuthService.java
 package vn.edu.crs.authservice.service;
 
 import lombok.RequiredArgsConstructor;
@@ -37,11 +38,13 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(
+                user.getId(),
                 user.getUsername(),
                 user.getRole()
         );
 
         return new LoginResponseDTO(
+                user.getId(),
                 token,
                 user.getUsername(),
                 user.getRole()
