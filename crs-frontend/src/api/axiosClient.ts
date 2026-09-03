@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -9,7 +9,7 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('crs_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

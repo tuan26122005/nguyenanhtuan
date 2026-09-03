@@ -1,142 +1,66 @@
-import type {Course}
-    from "../types/course";
+import type { Course } from "../types/course";
+import type { LoadState } from "../api/useCourses";
 
-import type {LoadState}
-    from "../api/useCourses";
-
-
-
-interface Props{
-
-    courses:Course[];
-
-    state:LoadState;
-
-    errorMessage:string;
-
-    onRetry:()=>void;
-
+interface Props {
+    courses: Course[];
+    state: LoadState;
+    errorMessage: string;
+    onRetry: () => void;
+    onEdit: (course: Course) => void;
+    onDelete: (course: Course) => void;
 }
 
+export default function CourseList({
+                                       courses,
+                                       state,
+                                       errorMessage,
+                                       onRetry,
+                                       onEdit,
+                                       onDelete,
+                                   }: Props) {
+    if (state === "loading") return <p>Đang tải...</p>;
 
-
-export default function CourseList(
-    {
-        courses,
-        state,
-        errorMessage,
-        onRetry
-
-    }:Props){
-
-
-
-    if(state==="loading")
-        return <p>Đang tải...</p>
-
-
-
-    if(state==="error")
-
+    if (state === "error") {
         return (
-
-            <div>
-
+            <div style={{ color: "#b91c1c" }}>
                 <p>{errorMessage}</p>
-
-                <button onClick={onRetry}>
-
-                    Thử lại
-
-                </button>
-
+                <button onClick={onRetry}>Thử lại</button>
             </div>
+        );
+    }
 
-        )
-
-
-
-    if(state==="empty")
-
-        return <p>
-            Không tìm thấy môn học
-        </p>
-
-
+    if (state === "empty") return <p>Không tìm thấy môn học</p>;
 
     return (
-
-        <table>
-
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-
-            <tr>
-
-                <th>
-                    Tên môn
-                </th>
-
-                <th>
-                    Số tín chỉ
-                </th>
-
-                <th>
-                    Số chỗ
-                </th>
-
-
+            <tr style={{ textAlign: "left", borderBottom: "2px solid #333" }}>
+                <th>Tên môn</th>
+                <th>Số tín chỉ</th>
+                <th>Số chỗ</th>
+                <th>Thao tác</th>
             </tr>
-
             </thead>
-
-
             <tbody>
-
-
-            {
-
-                courses.map(course=>(
-
-
-                    <tr key={course.id}>
-
-
-                        <td>
-                            {course.tenMonHoc}
-                        </td>
-
-
-                        <td>
-                            {course.soTinChi}
-                        </td>
-
-
-                        <td>
-
-                            {course.soChoConLai}
-
-                            /
-
-                            {course.soChoToiDa}
-
-                        </td>
-
-
-                    </tr>
-
-
-                ))
-
-            }
-
-
+            {courses.map((course) => (
+                <tr key={course.id} style={{ borderBottom: "1px solid #eee" }}>
+                    <td>{course.tenMonHoc}</td>
+                    <td>{course.soTinChi}</td>
+                    <td style={{ color: course.soChoConLai === 0 ? "#b91c1c" : "inherit" }}>
+                        {course.soChoConLai} / {course.soChoToiDa}
+                    </td>
+                    <td>
+                        <button onClick={() => onEdit(course)}>Sửa</button>
+                        <button
+                            onClick={() => onDelete(course)}
+                            style={{ marginLeft: 8, color: "#b91c1c" }}
+                        >
+                            Xoá
+                        </button>
+                    </td>
+                </tr>
+            ))}
             </tbody>
-
-
         </table>
-
-
-    )
-
-
+    );
 }

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import axios from "axios";
 
 import { useCourses } from "./api/useCourses";
+import { createCourse, updateCourse, deleteCourse } from "./api/courseApi";
 import SearchBox from "./components/SearchBox";
 import CourseList from "./components/CourseList";
 import Pagination from "./components/Pagination";
+import CourseForm from "./components/CourseForm";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,9 +15,15 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ApiKeysPage from "./pages/ApiKeysPage";
 import LoginPage from "./pages/LoginPage";
 
+import type { Course, CourseFormValues } from "./types/course";
+import type { ApiErrorResponse } from "./types/apiError";
+
 function CourseListPage() {
     const [keyword, setKeyword] = useState("");
     const [page, setPage] = useState(0);
+    const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
 
     const { courses, totalPages, state, errorMessage, refetch } = useCourses(
         keyword,
@@ -26,9 +35,58 @@ function CourseListPage() {
         setPage(0);
     };
 
+    const extractErrorMessage = (err: unknown): string => {
+        if (axios.isAxiosError<ApiErrorResponse>(err)) {
+            const data = err.response?.data;
+            if (data?.message) return data.message;
+            if (data) {
+                const firstFieldError = Object.values(data).find(
+                    (v) => typeof v === "string"
+                );
+                if (firstFieldError) return firstFieldError;
+            }
+        }
+        return "Đã xảy ra lỗi, vui lòng thử lại.";
+    };
+
+    const handleFormSubmit = async (values: CourseFormValues) => {
+        setSubmitting(true);
+        setFormError(null);
+        try {
+            if (editingCourse) {
+                await updateCourse(editingCourse.id, values);
+            } else {
+                await createCourse(values);
+            }
+            setEditingCourse(null);
+            refetch(); // Tự động refetch danh sách sau khi lưu thành công
+        } catch (err) {
+            setFormError(extractErrorMessage(err));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (course: Course) => {
+        if (!window.confirm(`Xoá môn học "${course.tenMonHoc}"?`)) return;
+        try {
+            await deleteCourse(course.id);
+            refetch(); // Tự động refetch danh sách sau khi xoá thành công
+        } catch (err) {
+            alert(extractErrorMessage(err));
+        }
+    };
+
     return (
         <div style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 800, margin: "0 auto" }}>
-            <h1>Danh sách môn học</h1>
+            <h1>Quản lý môn học (Admin)</h1>
+            <CourseForm
+                editingCourse={editingCourse}
+                onSubmit={handleFormSubmit}
+                onCancel={() => setEditingCourse(null)}
+                submitting={submitting}
+                serverError={formError}
+            />
             <SearchBox onSearch={handleSearch} placeholder="Tìm kiếm môn học..." />
             <div style={{ marginTop: 20 }}>
                 <CourseList
@@ -36,6 +94,8 @@ function CourseListPage() {
                     state={state}
                     errorMessage={errorMessage}
                     onRetry={refetch}
+                    onEdit={setEditingCourse}
+                    onDelete={handleDelete}
                 />
             </div>
             <Pagination

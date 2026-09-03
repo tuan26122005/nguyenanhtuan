@@ -13,3 +13,16 @@ export interface PagedResponse<T> {
     number: number;
     size: number;
 }
+
+// Bổ sung kiểu dữ liệu riêng cho Form (Thêm / Sửa)
+export interface CourseFormValues {
+    tenMonHoc: string;
+    soTinChi: string;   // Dùng string trong Form để dễ kiểm soát input rỗng
+    soChoToiDa: string;
+}
+
+export const emptyCourseForm: CourseFormValues = {
+    tenMonHoc: '',
+    soTinChi: '',
+    soChoToiDa: '',
+};

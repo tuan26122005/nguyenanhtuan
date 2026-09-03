@@ -16,23 +16,28 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String testKey = "ak_live_d85rixlbhjqix0b4";
+        // 1. API Key chỉ có quyền Đọc (Test 3 -> Test 7)
+        seedKeyIfNotExist("ak_live_d85rixlbhjqix0b4", "Doi tac ReadOnly", "courses:read");
 
-        // Kiểm tra xem key test đã tồn tại trong DB chưa
+        // 2. API Key có đầy đủ quyền Ghi (Dùng cho Test 8)
+        seedKeyIfNotExist("ak_live_write_valid_8888", "Doi tac Write", "courses:read,courses:write");
+    }
+
+    private void seedKeyIfNotExist(String keyValue, String ownerName, String scopes) {
         boolean exists = apiKeyRepository.findAll().stream()
-                .anyMatch(k -> testKey.equals(k.getKeyValue()));
+                .anyMatch(k -> keyValue.equals(k.getKeyValue()));
 
         if (!exists) {
             ApiKey apiKey = new ApiKey();
-            apiKey.setKeyValue(testKey);
-            apiKey.setOwnerName("Doi tac Test");
-            apiKey.setScopes("courses:read");
+            apiKey.setKeyValue(keyValue);
+            apiKey.setOwnerName(ownerName);
+            apiKey.setScopes(scopes);
             apiKey.setStatus("ACTIVE");
             apiKey.setExpiresAt(LocalDateTime.now().plusDays(30));
             apiKey.setCreatedAt(LocalDateTime.now());
 
             apiKeyRepository.save(apiKey);
-            System.out.println(">>> [DataSeeder] Đã chèn thành công API Key test: " + testKey);
+            System.out.println(">>> [DataSeeder] Đã chèn thành công API Key: " + keyValue + " | Scopes: " + scopes);
         }
     }
 }
